@@ -1,0 +1,71 @@
+{
+  "formatVersion": 1,
+  "files": [
+    {
+      "path": "dsh/node_modules/@deepseek-ai/dsh-tools/lib/index.js",
+      "sourceSha256": "40F47709337C3C205D4E09E647F8588F4977E66F6D52F019B3CC7EF81159D84F",
+      "targetSha256": "3AD573056333908F42A123A033CC911742CA0EF0DCB550666595057886FAC449",
+      "hunks": [
+        {
+          "old": "* fallback outside its own language.\n*/\nconst TYPESCRIPT_FLAVOR = {\n\tdescription: \"Execute a TypeScript program against the available tools. Takes two required arguments: `code`, the BODY of an async function (erasable syntax only; top-level `await` and `return` work), and `description`, a short summary of what the program does. Call tools as `await tools.name(args)` per the declarations in the system prompt. Only what you print or return is program output — curate it. Image-bearing subtool results are attached after the run.\",\n\tcodeDescription: \"The program: the body of an async TypeScript function.\"\n};\n/** Per-language `run_code` schema flavors (see {@link RunCodeFlavor}); one entry per {@link PtcSdkLanguage}. */\nconst RUN_CODE_FLAVORS = {\n\ttypescript: TYPESCRIPT_FLAVOR,\n\tpython: {\n\t\tdescription: \"Execute a Python program against the available tools. Takes two required arguments: `code`, the BODY of an async function (top-level `await` and `return` work), and `description`, a short summary of what the program does. Call tools as `await tools.name(args)` per the declarations in the system prompt. Use `print(...)` and/or `return <value>` for program output — curate it. Image-bearing subtool results are attached after the run.\",\n\t\tcodeDescription: \"The program: the body of an async Python function.\"\n\t}\n};\n/**\n* The `description` parameter's model-facing description: language-independent\n* (the UI label contract is the same for every runtime), shared between the\n* static spec and the language-aware `parameters` getter so the two emissions\n* can never drift.\n*/\nconst RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION = \"Clear, concise description of what this program does in active voice, 5-10 words (shown in the UI). Examples: \\\"Count TODO markers across packages\\\"; \\\"Read failing test and its fixture\\\"; \\\"Rename config key in every cordis.yml\\\".\";\nconst RUN_CODE_CONTROLS = {\n\ttimeoutMs: {\n",
+          "new": "* fallback outside its own language.\n*/\nconst TYPESCRIPT_FLAVOR = {\n\tdescription: \"Execute a TypeScript program against the available tools. Takes one required argument: `code`, the BODY of an async function (erasable syntax only; top-level `await` and `return` work). Call tools as `await tools.name(args)` per the declarations in the system prompt. Only what you print or return is program output — curate it. Image-bearing subtool results are attached after the run.\",\n\tcodeDescription: \"The program: the body of an async TypeScript function.\"\n};\n/** Per-language `run_code` schema flavors (see {@link RunCodeFlavor}); one entry per {@link PtcSdkLanguage}. */\nconst RUN_CODE_FLAVORS = {\n\ttypescript: TYPESCRIPT_FLAVOR,\n\tpython: {\n\t\tdescription: \"Execute a Python program against the available tools. Takes one required argument: `code`, the BODY of an async function (top-level `await` and `return` work). Call tools as `await tools.name(args)` per the declarations in the system prompt. Use `print(...)` and/or `return <value>` for program output — curate it. Image-bearing subtool results are attached after the run.\",\n\t\tcodeDescription: \"The program: the body of an async Python function.\"\n\t}\n};\n/** Legacy optional UI label accepted by local validation, omitted from model schema. */\nconst RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION = \"Clear, concise description of what this program does in active voice, 5-10 words (shown in the UI). Examples: \\\"Count TODO markers across packages\\\"; \\\"Read failing test and its fixture\\\"; \\\"Rename config key in every cordis.yml\\\".\";\nconst RUN_CODE_CONTROLS = {\n\ttimeoutMs: {\n"
+        },
+        {
+          "old": "\t\t\t},\n\t\t\tdescription: {\n\t\t\t\ttype: \"string\",\n\t\t\t\trequired: true,\n\t\t\t\tdescription: RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION\n\t\t\t},\n\t\t\t...RUN_CODE_CONTROLS\n",
+          "new": "\t\t\t},\n\t\t\tdescription: {\n\t\t\t\ttype: \"string\",\n\t\t\t\tdescription: RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION\n\t\t\t},\n\t\t\t...RUN_CODE_CONTROLS\n"
+        },
+        {
+          "old": "\t\t\t}\n\t\t},\n\t\tasync execute(args, exec) {\n\t\t\tif (args.description.trim().length === 0) throw new Error(\"invalid description: expected a non-empty string\");\n\t\t\tconst runtime = requireRuntime();\n\t\t\tvalidateEscalationArgs(args.sandbox_permissions, args.justification);\n\t\t\tif (args.timeoutMs !== void 0 && runtime.timeout === void 0) throw new Error(\"timeoutMs is not available for this PTC runtime\");\n",
+          "new": "\t\t\t}\n\t\t},\n\t\tasync execute(args, exec) {\n\t\t\tif (args.description !== void 0 && args.description.trim().length === 0) throw new Error(\"invalid description: expected a non-empty string\");\n\t\t\tconst runtime = requireRuntime();\n\t\t\tvalidateEscalationArgs(args.sandbox_permissions, args.justification);\n\t\t\tif (args.timeoutMs !== void 0 && runtime.timeout === void 0) throw new Error(\"timeoutMs is not available for this PTC runtime\");\n"
+        },
+        {
+          "old": "\t\t},\n\t\tpresentCall: (args) => ({\n\t\t\tcard: \"generic\",\n\t\t\ttitle: args.description,\n\t\t\tkind: \"execute\",\n\t\t\trawInput: args.code\n\t\t})\n",
+          "new": "\t\t},\n\t\tpresentCall: (args) => ({\n\t\t\tcard: \"generic\",\n\t\t\ttitle: args.description || \"执行代码\",\n\t\t\tkind: \"execute\",\n\t\t\trawInput: args.code\n\t\t})\n"
+        },
+        {
+          "old": "\t\t\t\ttype: \"string\",\n\t\t\t\trequired: true,\n\t\t\t\tdescription: resolveFlavor(peekRuntime).codeDescription\n\t\t\t},\n\t\t\tdescription: {\n\t\t\t\ttype: \"string\",\n\t\t\t\trequired: true,\n\t\t\t\tdescription: RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION\n\t\t\t},\n\t\t\t...controlParameters(peekRuntime())\n\t\t})\n",
+          "new": "\t\t\t\ttype: \"string\",\n\t\t\t\trequired: true,\n\t\t\t\tdescription: resolveFlavor(peekRuntime).codeDescription\n\t\t\t},\n\t\t\t...controlParameters(peekRuntime())\n\t\t})\n"
+        }
+      ]
+    },
+    {
+      "path": "dsh/node_modules/@deepseek-ai/dsh-tools/lib/types/ptc.js",
+      "sourceSha256": "3BB2D4B127BD21DD2B17C0AE219F851C4E37420A9BAB73AB13D9FC51CA9131D5",
+      "targetSha256": "63EAA40FFF8E0F43C808DE9EED8959A9D6DB15A4B5DB42B05A74DE977AE3D39F",
+      "hunks": [
+        {
+          "old": " * fallback outside its own language.\n */\nconst TYPESCRIPT_FLAVOR = {\n    description: 'Execute a TypeScript program against the available tools. Takes two required '\n        + 'arguments: `code`, the BODY of an async function (erasable syntax only; top-level '\n        + '`await` and `return` work), and `description`, a short summary of what the program '\n        + 'does. Call tools as `await tools.name(args)` per the declarations in the system '\n        + 'prompt. Only what you print or return is program output — curate it. Image-bearing '\n        + 'subtool results are attached after the run.',\n    codeDescription: 'The program: the body of an async TypeScript function.',\n",
+          "new": " * fallback outside its own language.\n */\nconst TYPESCRIPT_FLAVOR = {\n    description: 'Execute a TypeScript program against the available tools. Takes one required '\n        + 'argument: `code`, the BODY of an async function (erasable syntax only; top-level '\n        + '`await` and `return` work). Call tools as `await tools.name(args)` per the declarations in the system '\n        + 'prompt. Only what you print or return is program output — curate it. Image-bearing '\n        + 'subtool results are attached after the run.',\n    codeDescription: 'The program: the body of an async TypeScript function.',\n"
+        },
+        {
+          "old": " * {@link ./py-types.ts}'s SDK instructions.\n */\nconst PYTHON_FLAVOR = {\n    description: 'Execute a Python program against the available tools. Takes two required '\n        + 'arguments: `code`, the BODY of an async function (top-level `await` and `return` '\n        + 'work), and `description`, a short summary of what the program does. Call tools as '\n        + '`await tools.name(args)` per the declarations in the system prompt. Use '\n        + '`print(...)` and/or `return <value>` for program output — curate it. Image-bearing '\n        + 'subtool results are attached after the run.',\n",
+          "new": " * {@link ./py-types.ts}'s SDK instructions.\n */\nconst PYTHON_FLAVOR = {\n    description: 'Execute a Python program against the available tools. Takes one required '\n        + 'argument: `code`, the BODY of an async function (top-level `await` and `return` '\n        + 'work). Call tools as '\n        + '`await tools.name(args)` per the declarations in the system prompt. Use '\n        + '`print(...)` and/or `return <value>` for program output — curate it. Image-bearing '\n        + 'subtool results are attached after the run.',\n"
+        },
+        {
+          "old": "    typescript: TYPESCRIPT_FLAVOR,\n    python: PYTHON_FLAVOR,\n};\n/**\n * The `description` parameter's model-facing description: language-independent\n * (the UI label contract is the same for every runtime), shared between the\n * static spec and the language-aware `parameters` getter so the two emissions\n * can never drift.\n */\nconst RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION = 'Clear, concise description of what this program does in active voice, '\n    + '5-10 words (shown in the UI). Examples: \"Count TODO markers across packages\"; '\n    + '\"Read failing test and its fixture\"; \"Rename config key in every cordis.yml\".';\n",
+          "new": "    typescript: TYPESCRIPT_FLAVOR,\n    python: PYTHON_FLAVOR,\n};\n/** Legacy optional UI label accepted by local validation, omitted from model schema. */\nconst RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION = 'Clear, concise description of what this program does in active voice, '\n    + '5-10 words (shown in the UI). Examples: \"Count TODO markers across packages\"; '\n    + '\"Read failing test and its fixture\"; \"Rename config key in every cordis.yml\".';\n"
+        },
+        {
+          "old": "}\n/**\n * Build the `run_code` {@link ToolDefinition}: required `code` and\n * `description` parameters, executed through the dispatch bridge described\n * above. The\n * registry reserves it as presentation infrastructure under non-native modes,\n * outside the filterable global/scoped capability layers.\n",
+          "new": "}\n/**\n * Build the `run_code` {@link ToolDefinition}: required `code` and\n * optional `description` parameters, executed through the dispatch bridge described\n * above. The\n * registry reserves it as presentation infrastructure under non-native modes,\n * outside the filterable global/scoped capability layers.\n"
+        },
+        {
+          "old": "            code: { type: 'string', required: true, description: TYPESCRIPT_FLAVOR.codeDescription },\n            description: {\n                type: 'string',\n                required: true,\n                description: RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION,\n            },\n            ...RUN_CODE_CONTROLS,\n",
+          "new": "            code: { type: 'string', required: true, description: TYPESCRIPT_FLAVOR.codeDescription },\n            description: {\n                type: 'string',\n                description: RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION,\n            },\n            ...RUN_CODE_CONTROLS,\n"
+        },
+        {
+          "old": "            },\n        },\n        async execute(args, exec) {\n            if (args.description.trim().length === 0) {\n                throw new Error('invalid description: expected a non-empty string');\n            }\n            const runtime = requireRuntime();\n",
+          "new": "            },\n        },\n        async execute(args, exec) {\n            if (args.description !== undefined && args.description.trim().length === 0) {\n                throw new Error('invalid description: expected a non-empty string');\n            }\n            const runtime = requireRuntime();\n"
+        },
+        {
+          "old": "        // (the bash `description` precedent); the program itself rides rawInput.\n        presentCall: args => ({\n            card: 'generic',\n            title: args.description,\n            kind: 'execute',\n            rawInput: args.code,\n        }),\n",
+          "new": "        // (the bash `description` precedent); the program itself rides rawInput.\n        presentCall: args => ({\n            card: 'generic',\n            title: args.description || '执行代码',\n            kind: 'execute',\n            rawInput: args.code,\n        }),\n"
+        },
+        {
+          "old": "    });\n    Object.defineProperty(definition, 'parameters', {\n        enumerable: true,\n        // Recompile through the same spec→schema projection defineTool used, so\n        // the emitted schema always matches the validated specification.\n        get: () => parameterSchemaSpecToJsonSchema({\n            code: { type: 'string', required: true, description: resolveFlavor(peekRuntime).codeDescription },\n            description: { type: 'string', required: true, description: RUN_CODE_DESCRIPTION_PARAM_DESCRIPTION },\n            ...controlParameters(peekRuntime()),\n        }),\n    });\n",
+          "new": "    });\n    Object.defineProperty(definition, 'parameters', {\n        enumerable: true,\n        // Emit only model-facing arguments; validation still accepts legacy description.\n        get: () => parameterSchemaSpecToJsonSchema({\n            code: { type: 'string', required: true, description: resolveFlavor(peekRuntime).codeDescription },\n            ...controlParameters(peekRuntime()),\n        }),\n    });\n"
+        }
+      ]
+    }
+  ]
+}

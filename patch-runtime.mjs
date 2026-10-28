@@ -58,9 +58,14 @@ if (!fs.existsSync(nodeModules)) {
 const toolsFile = path.join(nodeModules, 'dsh-tools', 'lib', 'index.js');
 safePatch(toolsFile, [
   {
+    name: '修正已存在的只读 args.code 赋值为浅拷贝解冻对象',
+    search: 'if (typeof args.code === "string") args.code = args.code.trim().replace(/^```(?:typescript|ts|javascript|js)?\\r?\\n/i, "").replace(/\\r?\\n```$/i, "");',
+    replace: 'if (args && typeof args.code === "string") args = { ...args, code: args.code.trim().replace(/^```(?:typescript|ts|javascript|js)?\\r?\\n/i, "").replace(/\\r?\\n```$/i, "") };'
+  },
+  {
     name: '剥离 run_code 生成代码首尾的 Markdown 标记',
     search: 'async execute(args, exec) {\n\t\t\tif (args.description !== void 0 && args.description.trim().length === 0)',
-    replace: 'async execute(args, exec) {\n\t\t\tif (typeof args.code === "string") args.code = args.code.trim().replace(/^```(?:typescript|ts|javascript|js)?\\r?\\n/i, "").replace(/\\r?\\n```$/i, "");\n\t\t\tif (args.description !== void 0 && args.description.trim().length === 0)'
+    replace: 'async execute(args, exec) {\n\t\t\tif (args && typeof args.code === "string") args = { ...args, code: args.code.trim().replace(/^```(?:typescript|ts|javascript|js)?\\r?\\n/i, "").replace(/\\r?\\n```$/i, "") };\n\t\t\tif (args.description !== void 0 && args.description.trim().length === 0)'
   },
   {
     name: '自动将 Gemini 直接发起的子工具调用升格为 run_code 包装程序',
